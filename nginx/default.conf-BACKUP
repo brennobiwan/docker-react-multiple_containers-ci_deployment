@@ -1,0 +1,29 @@
+# defining the upstream servers
+
+upstream client { 
+# client is the name of the service inside docker-compose.yml.
+   server client:3000; # indicates the location of the service.
+}
+
+upstream api {
+   server api:5000;
+}
+
+
+# defining the main part of the configuration
+
+server {
+   listen 80; # port at which the container will receive connections.
+ 
+   location / { # triggered when a request arrives at /.
+      proxy_pass http://client; # redirects the request to the "client" upstream.
+   }
+
+   location /api {
+      rewrite /api/(.*) /$1 break; # chops off the "/api" part from the request before forwarding it.
+      # /$1 => refers only to the value(s) that matched the regex code.
+      # break => tells nginx to not apply any other rewrite rules.
+      # PS: (.*) => matches anything; "." any single character, "*" any number of times.
+      proxy_pass http://api;
+   }
+}

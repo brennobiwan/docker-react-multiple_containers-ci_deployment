@@ -1,0 +1,59 @@
+version: "3"
+services:
+   postgres:
+      image: "postgres:latest"
+      environment:
+         - POSTGRES_PASSWORD=postgres_password
+   redis:
+      image: "redis:latest"
+   api:
+      depends_on:
+         - postgres
+         - redis
+      build:
+         context: ./server # server's Dockerfile.dev is inside the server dir, which is not at the root level. 
+         dockerfile: Dockerfile.dev
+      volumes:
+         - /app/node_modules # tells docker to not overwrite this dir inside the container; it is locked.
+         - ./server:/app # files inside the container (app/) are references to the local file system.
+      environment:
+         - REDIS_HOST=redis # refers to the service defined as "redis" within this "docker-compose.yml" file.
+         - REDIS_PORT=6379
+         - PGUSER=postgres
+         - PGHOST=postgres # refers to the service defined as "postgres" within this file as well.
+         - PGDATABASE=postgres
+         - PGPASSWORD=postgres_password
+         - PGPORT=5432
+   client:
+      depends_on:
+         - api
+      stdin_open: true
+      build:
+         context: ./client
+         dockerfile: Dockerfile.dev
+      volumes:
+         - /app/node_modules
+         - ./client:/app
+   worker:
+      depends_on:
+         - redis
+      build: 
+         context: ./worker
+         dockerfile: Dockerfile.dev
+      volumes:
+         - /app/node_modules
+         - ./worker:/app
+      environment:
+         - REDIS_HOST=redis # refers to the service defined as "redis" within this "docker-compose.yml" file.
+         - REDIS_PORT=6379
+   nginx:
+      restart: "always"
+      build: 
+         context: ./nginx
+         dockerfile: Dockerfile.dev
+      ports:
+         - "3050:80" # redirects traffic arriving at local host 3050 to container's port 80.
+      depends_on:
+         - api
+         - client
+
