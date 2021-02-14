@@ -1,0 +1,25 @@
+sudo: required
+
+services:
+   - docker
+
+before_install: # we'll build a test version of the project (Dockerfile.dev).
+   - docker build -t brennobiwan/docker-react-ci-deployment -f ./client/Dockerfile.dev  ./client
+   # it is possible to build other images, just add them here.
+
+script: # primary test running section; Travis assume that build failed if exit code is different than zero. 
+   - docker run -e CI=true brennobiwan/docker-react-ci-deployment npm test -- --coverage # forces the test to exit.
+
+after_success: # here the production version of the app will be built and pushed to DockerHub upon successful tests.
+   - docker build -t brennobiwan/docker-react-ci-deployment-client ./client
+   - docker build -t brennobiwan/docker-react-ci-deployment-nginx ./nginx
+   - docker build -t brennobiwan/docker-react-ci-deployment-server ./server
+   - docker build -t brennobiwan/docker-react-ci-deployment-worker ./worker
+
+   # log into the Docker CLI and push these images to DockerHub.
+   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+   - docker push brennobiwan/docker-react-ci-deployment-client
+   - docker push brennobiwan/docker-react-ci-deployment-nginx
+   - docker push brennobiwan/docker-react-ci-deployment-server
+   - docker push brennobiwan/docker-react-ci-deployment-worker
+
