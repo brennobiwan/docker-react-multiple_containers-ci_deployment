@@ -24,11 +24,12 @@ after_success: # here the production version of the app will be built and pushed
    - docker push brennobiwan/docker-react-ci-deployment-worker
 
 deploy: 
+    edge: true
     provider: elasticbeanstalk
     region: "us-east-1"
     app: "multi-docker"
     env: "Multidocker-env"
-    bucket_name: "elasticbeanstalk-us-east-1-516177353811" # name of the s3 bucket created by elastic beanstalk.
+    bucket_name: "elasticbeanstalk-us-east-1-030124616983" # name of the s3 bucket created by elastic beanstalk.
 #    bucket_path: "docker-multi"
     on:
         branch: master
