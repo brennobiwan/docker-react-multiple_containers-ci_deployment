@@ -29,8 +29,8 @@ deploy:
     region: "us-east-1"
     app: "multi-docker"
     env: "Multidocker-env"
-    bucket_name: "elasticbeanstalk-us-east-1-030124616983" # name of the s3 bucket created by elastic beanstalk.
-#    bucket_path: "docker-multi"
+    bucket_name: "elasticbeanstalk-us-east-1-076617516782" # name of the s3 bucket created by elastic beanstalk.
+    bucket_path: "multi-docker"
     on:
         branch: master
     access_key_id: $AWS_ACCESS_KEY
